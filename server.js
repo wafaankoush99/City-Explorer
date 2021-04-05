@@ -37,9 +37,9 @@ function homeRouteHandler(req,res) { // home
 
 function locationHandler(req,res) { // location
   console.log(req.query.city);
-  let locationKey = process.env.LOCATION_KEY;
+  let GEOCODE_API_KEY = process.env.GEOCODE_API_KEY;
   let cityName = req.query.city;
-  let locationURL = `https://eu1.locationiq.com/v1/search.php?key=${locationKey}&q=${cityName}&format=json`
+  let locationURL = `https://eu1.locationiq.com/v1/search.php?key=${GEOCODE_API_KEY}&q=${cityName}&format=json`
   superAgent.get(locationURL)
   .then(geoData=>{
     console.log(geoData);
@@ -67,19 +67,17 @@ function weatherHandler(req,res) { // weather
     });
 }
 
-function parksHandler (req,res){ // parks
+function parksHandler (req,res){ //parks
   let PARKS_API_KEY = process.env.PARKS_API_KEY;
   let cityName = req.query.search_query;
   let parksURL = `https://developer.nps.gov/api/v1/parks?q=${cityName}&api_key=${PARKS_API_KEY}`;
   superAgent.get(parksURL)
     .then(getData => {
-      let newArr = [];
-      let gettedData = getData.body.data;
-      let correctData = gettedData.map((items) => {
-        newArr.push(items);
+      let parksData = getData.body.data;
+      let data = parksData.map((items) => {
+        return new Park (items);
       });
-      res.send(newArr);
-      console.log(newArr)
+      res.send(data);
     })
     .catch(error => {
       res.send(error);
@@ -111,12 +109,12 @@ function Weather (weatherData) { // weather
   this.time = weatherData.valid_date ;
 }
 
-function Park (parkData) { // parks
-  this.name = parkData.data.fullName ;
-  this.address = parkData.data.addresses[0];
-  this.fee =parkData.data.fees ;
-  this.description = parkData.data.description;
-  this.url = parkData.data.url;
+function Park (parkData) {
+  this.name = parkData.fullName ;
+  this.address = `${parkData.addresses[0].line1}, ${parkData.addresses[0].city}, ${parkData.addresses[0].stateCode} ${parkData.addresses[0].postalCode}`;
+  this.fee = parkData.entranceFees[0].cost;
+  this.description = parkData.description;
+  this.url = parkData.url;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
