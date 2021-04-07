@@ -22,7 +22,7 @@ server.use(cors());
 
 const client = new pg.Client({
   connectionString: process.env.DATABASE_URL
-  , ssl: { rejectUnauthorized: false }
+  // , ssl: { rejectUnauthorized: false }
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,6 +33,7 @@ server.get('/', homeRouteHandler); // home
 server.get('/location', locationHandler); // location
 server.get('/weather', weatherHandler); // weather
 server.get('/parks', parksHandler); // parks
+server.get('/movies', moviesHandler); // movies
 server.get('*', notFoundHandler); // error
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,7 +52,7 @@ function locationHandler(req, res) { // location DB
   client.query(SQL, [cityName])
     .then(geoData => {
       if (geoData.rowCount > 0) {
-        res.send(data.rows[0]);
+        res.send(geoData.rows[0]);
       }
       else {
         superAgent.get(locationURL)
@@ -113,6 +114,27 @@ function parksHandler(req, res) { //parks
     });
 }
 
+function moviesHandler(req, res) {
+  let MOVIE_API_KEY = process.env.MOVIE_API_KEY;
+  let cityName = req.query.search_query;
+  let movieURL = `https://api.themoviedb.org/3/search/movie?api_key=${MOVIE_API_KEY}&query=${cityName}`;
+  superAgent.get(movieURL)
+    .then(getData => {
+      // console.log(getData);
+      let moviesData = getData.body;
+      // console.log(moviesData);
+      console.log(getData.body.results[0].poster_path);
+      let gotData = moviesData.results.map((items) => {
+        return new Movies (items);
+      })
+      res.send(gotData);
+      console.log(`aaaaaaaa`,gotData);
+    })
+    .catch(error => {
+      res.send(error);
+    });
+}
+
 function notFoundHandler(req, res) { //error
   let errorObject = {
     status: 500,
@@ -146,6 +168,27 @@ function Park(parkData) { // parks
   this.url = parkData.url;
 }
 
+function Movies(moviesData) { // movies
+  // {
+  //   "title": "Love Happens",
+  //   "overview": "Dr. Burke Ryan is a successful self-help author and motivational speaker with a secret. While he helps thousands of people cope with tragedy and personal loss, he secretly is unable to overcome the death of his late wife. It's not until Burke meets a fiercely independent florist named Eloise that he is forced to face his past and overcome his demons.",
+  //   "average_votes": "5.80",
+  //   "total_votes": "282",
+  //   "image_url": "https://image.tmdb.org/t/p/w500/pN51u0l8oSEsxAYiHUzzbMrMXH7.jpg",
+  //   "popularity": "15.7500",
+  //   "released_on": "2009-09-18"
+  // },
+
+  this.title = moviesData.title;
+  this.overview = moviesData.overview;
+  this.average_votes = moviesData.vote_average;
+  this.total_votes = moviesData.vote_count;
+  this.image_url = `https://image.tmdb.org/t/p/w500${moviesData.poster_path}`;
+  this.popularity = moviesData.popularity;
+  this.released_on = moviesData.release_date;
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // PORT
@@ -156,5 +199,3 @@ client.connect()
       console.log(`Listening to PORT ${PORT}`);
     });
   })
-
-
