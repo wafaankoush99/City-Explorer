@@ -15,12 +15,6 @@ const superAgent = require('superagent');
 // pg library
 const pg = require('pg');
 
-// yelp library
-
-
-
-
-
 // Application Setup
 const PORT = process.env.PORT || 4000;
 const server = express();
@@ -28,7 +22,7 @@ server.use(cors());
 
 const client = new pg.Client({
   connectionString: process.env.DATABASE_URL
-  // , ssl: { rejectUnauthorized: false }
+  , ssl: { rejectUnauthorized: false }
 });
 
 
