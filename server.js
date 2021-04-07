@@ -15,6 +15,12 @@ const superAgent = require('superagent');
 // pg library
 const pg = require('pg');
 
+// yelp library
+
+
+
+
+
 // Application Setup
 const PORT = process.env.PORT || 4000;
 const server = express();
@@ -25,6 +31,7 @@ const client = new pg.Client({
   // , ssl: { rejectUnauthorized: false }
 });
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Routes:
@@ -34,6 +41,7 @@ server.get('/location', locationHandler); // location
 server.get('/weather', weatherHandler); // weather
 server.get('/parks', parksHandler); // parks
 server.get('/movies', moviesHandler); // movies
+server.get('/yelp', yelpHandler); // yelp
 server.get('*', notFoundHandler); // error
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +105,7 @@ function weatherHandler(req, res) { // weather
     });
 }
 
-function parksHandler(req, res) { //parks
+function parksHandler(req, res) { // parks
   let PARKS_API_KEY = process.env.PARKS_API_KEY;
   let cityName = req.query.search_query;
   let parksURL = `https://developer.nps.gov/api/v1/parks?q=${cityName}&api_key=${PARKS_API_KEY}`;
@@ -114,25 +122,42 @@ function parksHandler(req, res) { //parks
     });
 }
 
-function moviesHandler(req, res) {
+function moviesHandler(req, res) { // movies
   let MOVIE_API_KEY = process.env.MOVIE_API_KEY;
   let cityName = req.query.search_query;
   let movieURL = `https://api.themoviedb.org/3/search/movie?api_key=${MOVIE_API_KEY}&query=${cityName}`;
   superAgent.get(movieURL)
     .then(getData => {
-      // console.log(getData);
       let moviesData = getData.body;
-      // console.log(moviesData);
-      console.log(getData.body.results[0].poster_path);
+      // console.log(getData.body.results[0].poster_path);
       let gotData = moviesData.results.map((items) => {
-        return new Movies (items);
+        return new Movies(items);
       })
       res.send(gotData);
-      console.log(`aaaaaaaa`,gotData);
+      // console.log(`aaaaaaaa`,gotData);
     })
     .catch(error => {
       res.send(error);
     });
+}
+
+function yelpHandler(req, res) { // yelp
+  const yelp = require('yelp-fusion');
+  let YELP_API_KEY = process.env.YELP_API_KEY;
+  const clientYelp = yelp.client(YELP_API_KEY);
+  console.log('aaaaaaaaaaa');
+  clientYelp.search({
+    term: 'Four Barrel Coffee',
+    location: 'san francisco, ca',
+  }).then(allData => {
+    console.log(allData);
+    let gotData = allData.jsonBody.businesses.map((items) => {
+      return new Yelp (items)
+    })
+    res.send(gotData);
+  }).catch(e => {
+    console.log(e);
+  });
 }
 
 function notFoundHandler(req, res) { //error
@@ -169,16 +194,6 @@ function Park(parkData) { // parks
 }
 
 function Movies(moviesData) { // movies
-  // {
-  //   "title": "Love Happens",
-  //   "overview": "Dr. Burke Ryan is a successful self-help author and motivational speaker with a secret. While he helps thousands of people cope with tragedy and personal loss, he secretly is unable to overcome the death of his late wife. It's not until Burke meets a fiercely independent florist named Eloise that he is forced to face his past and overcome his demons.",
-  //   "average_votes": "5.80",
-  //   "total_votes": "282",
-  //   "image_url": "https://image.tmdb.org/t/p/w500/pN51u0l8oSEsxAYiHUzzbMrMXH7.jpg",
-  //   "popularity": "15.7500",
-  //   "released_on": "2009-09-18"
-  // },
-
   this.title = moviesData.title;
   this.overview = moviesData.overview;
   this.average_votes = moviesData.vote_average;
@@ -187,6 +202,21 @@ function Movies(moviesData) { // movies
   this.popularity = moviesData.popularity;
   this.released_on = moviesData.release_date;
 
+}
+
+function Yelp(yelpData) { // yelp
+  // {
+  //   "name": "Pike Place Chowder",
+  //   "image_url": "https://s3-media3.fl.yelpcdn.com/bphoto/ijju-wYoRAxWjHPTCxyQGQ/o.jpg",
+  //   "price": "$$   ",
+  //   "rating": "4.5",
+  //   "url": "https://www.yelp.com/biz/pike-place-chowder-seattle?adjust_creative=uK0rfzqjBmWNj6-d3ujNVA&utm_campaign=yelp_api_v3&utm_medium=api_v3_business_search&utm_source=uK0rfzqjBmWNj6-d3ujNVA"
+  // },
+  this.name = yelpData.name;
+  this.image_url = yelpData.image_url;
+  this.price = yelpData.price;
+  this.rating = yelpData.rating;
+  this.url = yelpData.url;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
