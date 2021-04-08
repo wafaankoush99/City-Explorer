@@ -22,7 +22,7 @@ server.use(cors());
 
 const client = new pg.Client({
   connectionString: process.env.DATABASE_URL
-  , ssl: { rejectUnauthorized: false }
+  // , ssl: { rejectUnauthorized: false }
 });
 
 
@@ -135,20 +135,23 @@ function moviesHandler(req, res) { // movies
     });
 }
 
+// `https://api.yelp.com/v3/businesses/search?location=${city}&limit=${numPerPage}&offset=${start}`
 function yelpHandler(req, res) { // yelp
   const yelp = require('yelp-fusion');
   let YELP_API_KEY = process.env.YELP_API_KEY;
   const clientYelp = yelp.client(YELP_API_KEY);
-  console.log('aaaaaaaaaaa');
+  // console.log(req.query.location);
   clientYelp.search({
-    term: 'Four Barrel Coffee',
-    location: 'san francisco, ca',
+    'location': 'seattle',
+    'limit' : '5',
+    'offset': '0'
   }).then(allData => {
-    console.log(allData);
+    // console.log(allData);
     let gotData = allData.jsonBody.businesses.map((items) => {
-      return new Yelp (items)
+      return new Yelp(items)
     })
     res.send(gotData);
+    
   }).catch(e => {
     console.log(e);
   });
