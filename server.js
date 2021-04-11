@@ -22,7 +22,7 @@ server.use(cors());
 
 const client = new pg.Client({
   connectionString: process.env.DATABASE_URL
-  // , ssl: { rejectUnauthorized: false }
+  , ssl: { rejectUnauthorized: false }
 });
 
 
@@ -135,27 +135,28 @@ function moviesHandler(req, res) { // movies
     });
 }
 
-// `https://api.yelp.com/v3/businesses/search?location=${city}&limit=${numPerPage}&offset=${start}`
-function yelpHandler(req, res) { // yelp
-  const yelp = require('yelp-fusion');
-  let YELP_API_KEY = process.env.YELP_API_KEY;
-  const clientYelp = yelp.client(YELP_API_KEY);
-  // console.log(req.query.location);
-  clientYelp.search({
-    'location': 'seattle',
-    'limit' : '5',
-    'offset': '0'
-  }).then(allData => {
-    // console.log(allData);
-    let gotData = allData.jsonBody.businesses.map((items) => {
-      return new Yelp(items)
-    })
+function yelpHandler (req,res){ // yelp
+  let city=req.query.search_query;
+  let pageNum= req.query.page;
+  let YELP_API_KEY= process.env.YELP_API_KEY;
+  let startFrom=((pageNum-1) * 5 +1);
+
+  let yelpURL= `https://api.yelp.com/v3/businesses/search?location=${city}&limit=5&offset=${startFrom}`;
+
+  superAgent.get(yelpURL).set(`Authorization`, `Bearer ${YELP_API_KEY}`)
+  .then(getData =>{
+    let yelpData = getData.body;
+    // console.log(yelpData);
+    let gotData = yelpData.businesses.map(items=>{
+      return new Yelp(items);
+    });
     res.send(gotData);
-    
-  }).catch(e => {
-    console.log(e);
+
+  }).catch(error => {
+    res.send(error);
   });
 }
+
 
 function notFoundHandler(req, res) { //error
   let errorObject = {
