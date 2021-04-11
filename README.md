@@ -24,4 +24,12 @@ Number and name of feature / add parks : 5
 
 Actual time needed to complete: 6 hours
 
+************************************************************
+Number and name of feature / add movies : 6
 
+Actual time needed to complete: 5 hours
+
+************************************************************
+Number and name of feature / add parks : 7
+
+Actual time needed to complete: 9 hours
