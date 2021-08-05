@@ -1,35 +1,21 @@
 # City-Explorer
 
-Number and name of feature: 1
+1. `git clone "repo-link"`
+2. `cd City-Explorer`
+3. `npm i`
+4. `code .` comment line 25
+5. `nodemon`
 
-Actual time needed to complete: 10 minutes
+## Routes: 
 
-************************************************************
-Number and name of feature: 2
+http://localhost:4000
 
-Actual time needed to complete: 1 hour
+http://localhost:4000/locations
 
-************************************************************
-Number and name of feature: 3
+http://localhost:4000/weather
 
-Actual time needed to complete: 1 hour
+http://localhost:4000/parks
 
-************************************************************
-Number and name of feature: 4
+http://localhost:4000/movies
 
-Actual time needed to complete: 30 min
-
-************************************************************
-Number and name of feature / add parks : 5
-
-Actual time needed to complete: 6 hours
-
-************************************************************
-Number and name of feature / add movies : 6
-
-Actual time needed to complete: 5 hours
-
-************************************************************
-Number and name of feature / add parks : 7
-
-Actual time needed to complete: 9 hours
+http://localhost:4000/yelp
